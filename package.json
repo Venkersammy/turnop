@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@discordjs/builders": "^0.6.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.1.0",
+    "fs": "^0.0.1-security",
+    "lodash": "^4.17.21",
+    "mongoose": "^6.0.7"
+  },
+  "scripts": {
+    "dev": "nodemon ./src/index.js"
+  }
+}
