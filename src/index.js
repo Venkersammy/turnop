@@ -66,14 +66,15 @@ client.on('interactionCreate', async (interaction) => {
 		if (await user.db.collection('users').findOne( {discordId: {$eq: interaction.user.id}}))
 		{
 			interaction.reply({
-				content: 'You are already notifying subscribers when you join voice.'
+				content: 'You are already notifying subscribers when you join voice.',
+				ephemeral: true
 			})
 			return
 		}
 
 		interaction.reply({
 			content: 'Joining the voice chat will now notifiy subscribers.',
-			ephemeral: true,
+			ephemeral: true
 		})
 		const newUser = await user.create({
 			username: interaction.user.username,
@@ -84,7 +85,8 @@ client.on('interactionCreate', async (interaction) => {
 	if (commandName === 'add') {
 		const num = options.getString('phone')
 		interaction.reply({
-			content: 'You are now a subscriber.'
+			content: 'You are now a subscriber.',
+			ephemeral: true
 		})
 		
 		const newPhone = await phone.create( {
