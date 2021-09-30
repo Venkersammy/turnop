@@ -1,15 +1,16 @@
 const fs = require('fs')
 const { Client, Intents, Constants } = require('discord.js')
 const { token, guildId } = require('../config.json')
-const mongo = require('./mongo')
+const mongoose = require('./mongoose')
 const user = require('../schemas/userSchema')
 const phone = require('../schemas/phoneSchema')
-
+const mongo = require('mongodb')
+const { db } = require('../schemas/userSchema')
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 const connectToMongoDB = async () => {
-	await mongo().then((mongoose) => {
+	await mongoose().then((mongoose) => {
 		try {
 			console.log('Connected to mongodb!')
 		}
@@ -61,7 +62,15 @@ client.on('interactionCreate', async (interaction) => {
 	const { commandName, options } = interaction
 
 	if (commandName === 'turnop') {
-		
+
+		if (await user.db.collection('users').findOne( {discordId: {$eq: interaction.user.id}}))
+		{
+			interaction.reply({
+				content: 'You are already notifying subscribers when you join voice.'
+			})
+			return
+		}
+
 		interaction.reply({
 			content: 'Joining the voice chat will now notifiy subscribers.',
 			ephemeral: true,
