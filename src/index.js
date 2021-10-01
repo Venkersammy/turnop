@@ -6,6 +6,7 @@ const user = require('../schemas/userSchema')
 const phone = require('../schemas/phoneSchema')
 const mongo = require('mongodb')
 const { db } = require('../schemas/userSchema')
+const { add } = require('lodash')
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -63,7 +64,7 @@ client.on('interactionCreate', async (interaction) => {
 
 	if (commandName === 'turnop') {
 
-		if (await user.db.collection('users').findOne( {discordId: {$eq: interaction.user.id}}))
+		if (await user.db.collection('users').findOne( {discordId: {$eq: interaction.user.id}} ))
 		{
 			interaction.reply({
 				content: 'You are already notifying subscribers when you join voice.',
@@ -83,6 +84,16 @@ client.on('interactionCreate', async (interaction) => {
 	}
 
 	if (commandName === 'add') {
+
+		if (await phone.db.collection('phones').findOne( {phoneNumber: {$eq: options.getString('phone')}} ))
+		{
+			interaction.reply({
+				content: "Your phone number is already added.",
+				ephemeral: true
+			})
+			return
+		}
+
 		const num = options.getString('phone')
 		interaction.reply({
 			content: 'You are now a subscriber.',
