@@ -8,7 +8,7 @@ const mongo = require('mongodb')
 const { db } = require('../schemas/userSchema')
 const { add } = require('lodash')
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
 const connectToMongoDB = async () => {
 	await mongoose().then((mongoose) => {
@@ -24,23 +24,23 @@ const connectToMongoDB = async () => {
 client.once('ready', () => {
 	console.log('Ready!')
 	connectToMongoDB()
-
+	
 	const guild = client.guilds.cache.get(guildId)
 	let commands
-
+	
 	if (guild) {
 		commands = guild.commands
 	} 
 	else {
 		commands = client.application?.commands
 	}
-
+	
 	commands?.create({
 		name: 'turnop',
 		description: "Notify subscribers when you turn up to voice chat.",
 		
 	})
-
+	
 	commands?.create({
 		name: 'add',
 		description: "Add your phone number you want to be notified at.",
@@ -59,11 +59,11 @@ client.on('interactionCreate', async (interaction) => {
 	if (!interaction.isCommand()) {
 		return
 	}
-
+	
 	const { commandName, options } = interaction
-
+	
 	if (commandName === 'turnop') {
-
+		
 		if (await user.db.collection('users').findOne( {discordId: {$eq: interaction.user.id}} ))
 		{
 			interaction.reply({
@@ -72,7 +72,7 @@ client.on('interactionCreate', async (interaction) => {
 			})
 			return
 		}
-
+		
 		interaction.reply({
 			content: 'Joining the voice chat will now notifiy subscribers.',
 			ephemeral: true
@@ -82,9 +82,9 @@ client.on('interactionCreate', async (interaction) => {
 			discordId: interaction.user.id
 		})
 	}
-
+	
 	if (commandName === 'add') {
-
+		
 		if (await phone.db.collection('phones').findOne( {phoneNumber: {$eq: options.getString('phone')}} ))
 		{
 			interaction.reply({
@@ -93,7 +93,7 @@ client.on('interactionCreate', async (interaction) => {
 			})
 			return
 		}
-
+		
 		const num = options.getString('phone')
 		interaction.reply({
 			content: 'You are now a subscriber.',
@@ -106,11 +106,13 @@ client.on('interactionCreate', async (interaction) => {
 	}
 })
 
-client.on("voiceStateUpdate", (oldVoiceState, newVoiceState) => { 
-    if (newVoiceState.channel) { 
-        console.log("buns")
+client.on('voiceStateUpdate', async (oldState, newState) => {
+
+	if (await user.db.collection('users').findOne( {discordId: {$eq: newState.member.id}} ) && oldState.channel === null)
+	{
+		console.log('send notification')
 	}
-});
+})
 
 // Login to Discord with your client's token
 client.login(token);
